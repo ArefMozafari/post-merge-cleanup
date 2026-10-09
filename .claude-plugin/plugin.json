@@ -1,0 +1,13 @@
+{
+  "name": "post-merge-cleanup",
+  "version": "1.0.0",
+  "description": "Confirms the merge from the remote, squash merges included, then removes the worktree and branch, reverts churn, fast-forwards the default branch, and retires notes that still call the work open.",
+  "author": {
+    "name": "Aref Mozafari",
+    "url": "https://github.com/ArefMozafari"
+  },
+  "homepage": "https://github.com/ArefMozafari/post-merge-cleanup",
+  "repository": "https://github.com/ArefMozafari/post-merge-cleanup",
+  "license": "MIT",
+  "keywords": ["git", "worktree", "pull-request", "merge-request", "agent-skill"]
+}

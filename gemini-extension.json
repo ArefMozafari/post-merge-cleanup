@@ -1,0 +1,5 @@
+{
+  "name": "post-merge-cleanup",
+  "version": "1.0.0",
+  "description": "Confirms the merge from the remote, squash merges included, then removes the worktree and branch, reverts churn, fast-forwards the default branch, and retires notes that still call the work open."
+}

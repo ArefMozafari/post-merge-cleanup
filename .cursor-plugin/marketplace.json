@@ -1,0 +1,16 @@
+{
+  "name": "post-merge-cleanup",
+  "owner": {
+    "name": "Aref Mozafari"
+  },
+  "metadata": {
+    "description": "Agent skill that cleans up branches, worktrees, and stale notes once your pull request has merged."
+  },
+  "plugins": [
+    {
+      "name": "post-merge-cleanup",
+      "source": "./",
+      "description": "Confirms the merge from the remote, squash merges included, then removes the worktree and branch, reverts churn, fast-forwards the default branch, and retires notes that still call the work open."
+    }
+  ]
+}
