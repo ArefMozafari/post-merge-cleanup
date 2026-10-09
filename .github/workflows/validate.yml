@@ -1,0 +1,44 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # setup-uv publishes no floating major tag, so this names the exact release.
+      - uses: astral-sh/setup-uv@v10.2.0
+
+      # The reference validator from the Agent Skills spec rejects any frontmatter key other
+      # agents would not accept, so a skill that passes here loads everywhere.
+      - name: Validate the skill against the Agent Skills spec
+        run: uvx --from skills-ref==0.1.1 agentskills validate skills/post-merge-cleanup
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Validate the Claude Code marketplace and plugin manifests
+        run: |
+          npx --yes @anthropic-ai/claude-code@2 plugin validate --strict .claude-plugin/marketplace.json
+          npx --yes @anthropic-ai/claude-code@2 plugin validate --strict .claude-plugin/plugin.json
+
+      # Gemini CLI ships no offline validator, so this checks the fields its extension loader reads.
+      - name: Validate the Gemini CLI extension manifest
+        run: jq -e '.name == "post-merge-cleanup" and (.version | type == "string") and (.description | type == "string")' gemini-extension.json
+
+      # Cursor's schemas are pinned to one commit of cursor/plugins, so an upstream change cannot
+      # break this build unannounced.
+      - name: Validate the Cursor plugin and marketplace manifests
+        env:
+          CURSOR_SCHEMAS_URL: https://raw.githubusercontent.com/cursor/plugins/ecc249f1e306fc64ddf83c7bed16cacf7c2239db/schemas
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/plugin.schema.json" "$CURSOR_SCHEMAS_URL/plugin.schema.json"
+          curl -fsSL -o "$RUNNER_TEMP/marketplace.schema.json" "$CURSOR_SCHEMAS_URL/marketplace.schema.json"
+          npx --yes -p ajv-cli@5.0.0 -p ajv-formats@3.0.1 ajv validate --spec=draft7 -c ajv-formats -s "$RUNNER_TEMP/plugin.schema.json" -d .cursor-plugin/plugin.json
+          npx --yes -p ajv-cli@5.0.0 -p ajv-formats@3.0.1 ajv validate --spec=draft7 -c ajv-formats -s "$RUNNER_TEMP/marketplace.schema.json" -d .cursor-plugin/marketplace.json
